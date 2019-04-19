@@ -23,11 +23,16 @@ class Timer extends Component {
     super(props)
     this.state = { isTimerStarted: false, timeRemaining: props.timer.toString() }
     props.timer.onChange((newTimeRemaining) => this.setState({ timeRemaining: newTimeRemaining }))
+    props.timer.onFinish(() => this.setState({ timerFinished: true }))
   }
 
   start = () => {
     this.setState({ isTimerStarted: true })
     this.props.timer.start()
+  }
+
+  componentWillUnmount() {
+    this.props.timer.destroy()
   }
 
   pause = () => {
