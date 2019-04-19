@@ -21,8 +21,8 @@ const PausedTimer = ({ timeRemaining, start, reset }) => (
 class Timer extends Component {
   constructor(props) {
     super(props)
-    props.timer.onChange(() => this.forceUpdate())
-    this.state = { isTimerStarted: false }
+    this.state = { isTimerStarted: false, timeRemaining: props.timer.toString() }
+    props.timer.onChange((newTimeRemaining) => this.setState({ timeRemaining: newTimeRemaining }))
   }
 
   start = () => {
@@ -36,14 +36,15 @@ class Timer extends Component {
   }
 
   render() {
-    const { timer, reset } = this.props
+    const { reset } = this.props
+    const { timeRemaining } = this.state
     if(!this.state.isTimerStarted) {
       return (
-        <PausedTimer reset={reset} start={this.start} timeRemaining={timer.toString()} />
+        <PausedTimer reset={reset} start={this.start} timeRemaining={timeRemaining} />
       )
     } else {
       return (
-        <RunningTimer reset={reset} pause={this.pause} timeRemaining={timer.toString()} />
+        <RunningTimer reset={reset} pause={this.pause} timeRemaining={timeRemaining} />
       );
     }
   }
