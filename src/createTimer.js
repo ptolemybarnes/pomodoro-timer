@@ -3,14 +3,10 @@ import uuidv1 from 'uuid/v1';
 const createCurrentTime = (time) => {
   return {
     increment: increment => {
-      const newTime = time + increment
-      if (newTime <= 0) {
-        return time
-      }
+      const newTime = Math.max(0, time + increment)
       time = newTime
       return time
     },
-    isZero: () => time < 0,
     toString: () => String(time)
   }
 }
@@ -25,7 +21,7 @@ const createTimer = startingTime => {
       interval = setInterval(() => {
         const newTime = currentTime.increment(-1000)
         change(newTime)
-        if(currentTime.isZero()) { 
+        if(newTime === 0) { 
           clearInterval(interval)
           finish()
         }
