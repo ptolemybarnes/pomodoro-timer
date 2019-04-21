@@ -2,17 +2,33 @@ import React, { Component } from 'react';
 import './App.css';
 import createTimer from './createTimer'
 
+const rightPad = (number) => {
+  if(number.length > 1) {
+    return String(number).slice(0, 2)
+  }
+  return rightPad(number < 10 ? '0' + number : number + '0')
+}
+
+const padAndRound = number => rightPad(Math.floor(number))
+
+const format = ms => {
+  const seconds = Number(ms) / 1000
+  const remainder = (seconds % 60)
+  const minutes = (seconds - remainder) / 60
+  return `${padAndRound(minutes)}:${padAndRound(remainder)}`
+}
+
 const NotStartedTimer = ({ start, timeRemaining, setTimeRemaining }) => (
   <>
   <input autoFocus type='number' value={timeRemaining} onChange={setTimeRemaining} />
-  <p>Time remaining: { timeRemaining } </p>
+  <p>Time remaining: { format(timeRemaining) } </p>
   <button onClick={start}>Start</button>
   </>
 )
 
 const RunningTimer = ({ timeRemaining, pause, reset }) => (
   <>
-  <p>Time remaining: { timeRemaining } </p>
+  <p>Time remaining: { format(timeRemaining) } </p>
   <button onClick={pause}>Pause</button>
   <button onClick={reset}>Reset</button>
   </>
@@ -20,7 +36,7 @@ const RunningTimer = ({ timeRemaining, pause, reset }) => (
 
 const PausedTimer = ({ timeRemaining, start, reset }) => (
   <>
-  <p>Time remaining: { timeRemaining } </p>
+  <p>Time remaining: { format(timeRemaining) } </p>
   <button onClick={start}>Start</button>
   <button onClick={reset}>Reset</button>
   </>
