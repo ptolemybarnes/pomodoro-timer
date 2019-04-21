@@ -11,25 +11,33 @@ const createCurrentTime = (time) => {
   }
 }
 
+const MODES = {
+  running: 'running',
+  paused: 'paused',
+  finished: 'finished'
+}
+
 const createTimer = startingTime => {
   let currentTime = createCurrentTime(startingTime)
   let change = () => {}
-  let finish = () => {}
   let interval;
   return {
     start: () => {
+      change(currentTime.toString(), MODES.running)
       interval = setInterval(() => {
         const newTime = currentTime.increment(-1000)
-        change(newTime)
+        change(newTime, MODES.running)
         if(newTime === 0) { 
           clearInterval(interval)
-          finish()
+          change(newTime, MODES.finished)
         }
       }, 1000)
     },
-    pause: () => { clearInterval(interval) },
-    onChange: fn => { change = fn },
-    onFinish: fn => { finish = fn },
+    pause: () => { 
+      clearInterval(interval)
+      change(currentTime.toString(), MODES.paused)
+    },
+    onEvent: fn => { change = fn },
     destroy: () => clearInterval(interval),
     toString: () => currentTime.toString(),
     id: uuidv1()

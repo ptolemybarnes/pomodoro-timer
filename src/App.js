@@ -30,21 +30,18 @@ class Timer extends Component {
   constructor(props) {
     super(props)
     this.state = { timerMode: 'notStarted', timeRemaining: props.timer.toString() }
-    props.timer.onChange((newTimeRemaining) => this.setState({ timeRemaining: newTimeRemaining }))
-    props.timer.onFinish(() => this.setState({ timerFinished: true }))
-  }
-
-  start = () => {
-    this.setState({ timerMode: 'running' })
-    this.props.timer.start()
+    props.timer.onEvent((newTimeRemaining, mode) => this.setState({ timeRemaining: newTimeRemaining, mode }))
   }
 
   componentWillUnmount() {
     this.props.timer.destroy()
   }
 
+  start = () => {
+    this.props.timer.start()
+  }
+
   pause = () => {
-    this.setState({ timerMode: 'paused' })
     this.props.timer.pause();
   }
 
@@ -55,11 +52,7 @@ class Timer extends Component {
   render() {
     const { reset } = this.props
     const { timeRemaining } = this.state
-    switch(this.state.timerMode) {
-      case 'notStarted':
-        return (
-          <NotStartedTimer start={this.start} timeRemaining={timeRemaining} setTimeRemaining={this.setTimeRemaining} />
-        )
+    switch(this.state.mode) {
       case 'paused':
         return (
           <PausedTimer reset={() => reset()} start={this.start} timeRemaining={timeRemaining} />
@@ -68,8 +61,10 @@ class Timer extends Component {
         return (
           <RunningTimer reset={() => reset()} pause={this.pause} timeRemaining={timeRemaining} />
         )
+      case 'finished':
+        return (<p>Timer done!</p>)
       default:
-        return (<p>:-(</p>)
+        return <NotStartedTimer start={this.start} timeRemaining={timeRemaining} setTimeRemaining={this.setTimeRemaining} />
     }
   }
 }
