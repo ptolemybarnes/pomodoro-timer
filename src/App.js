@@ -26,28 +26,27 @@ const PausedTimer = ({ timeRemaining, start, reset }) => (
   </>
 )
 
+const debug = fn => (...args) => {
+  console.log('CHANGE: ', args.join(', '));
+  return fn(...args)
+}
+
 class Timer extends Component {
   constructor(props) {
     super(props)
     this.state = { timerMode: 'notStarted', timeRemaining: props.timer.toString() }
-    props.timer.onEvent((newTimeRemaining, mode) => this.setState({ timeRemaining: newTimeRemaining, mode }))
+    props.timer.onEvent(debug(this.onTimerEvent))
   }
 
-  componentWillUnmount() {
-    this.props.timer.destroy()
-  }
+  componentWillUnmount = () => this.props.timer.destroy()
 
-  start = () => {
-    this.props.timer.start()
-  }
+  onTimerEvent = (newTimeRemaining, mode) => this.setState({ timeRemaining: newTimeRemaining, mode })
 
-  pause = () => {
-    this.props.timer.pause();
-  }
+  start = () => this.props.timer.start()
 
-  setTimeRemaining = (event) => {
-    this.props.reset(Number(event.target.value))
-  }
+  pause = () => this.props.timer.pause()
+
+  setTimeRemaining = (event) => this.props.reset(Number(event.target.value))
 
   render() {
     const { reset } = this.props
@@ -70,6 +69,7 @@ class Timer extends Component {
 }
 
 const DEFAULT_START_TIME = 20000
+const DEFAULT_BREAK_START_TIME = 5000
 class App extends Component {
   constructor(props) {
     super(props)
@@ -77,14 +77,23 @@ class App extends Component {
     this.state = { timer, timerId: timer.id }
   }
 
+  reset = (startTime = DEFAULT_START_TIME) => {
+    const timer = createTimer(startTime)
+    timer.onEvent((_, mode) => mode === 'finished' ? this.startBreak() : null)
+    this.setState({ timer, timerId: timer.id })
+  }
+
+  startBreak = (startTime = DEFAULT_BREAK_START_TIME) => {
+    const timer = createTimer(startTime)
+    timer.start()
+    timer.onEvent((_, mode) => mode === 'finished' ? this.reset() : null)
+    this.setState({ timer, timerId: timer.id })
+  }
+
   render() {
-    const reset = (startTime = DEFAULT_START_TIME) => {
-      const timer = createTimer(startTime)
-      this.setState({ timer, timerId: timer.id })
-    }
     return (
       <div className="App">
-        <Timer reset={reset} key={this.state.timerId} timer={this.state.timer} />
+        <Timer reset={this.reset} key={this.state.timerId} timer={this.state.timer} startBreak={this.startBreak} />
       </div>
     )
   }

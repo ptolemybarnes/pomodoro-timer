@@ -17,28 +17,38 @@ const MODES = {
   finished: 'finished'
 }
 
+const notify = (listeners) => (...args) => {
+  listeners.forEach(listener => listener(...args))
+}
+
 const createTimer = startingTime => {
-  let currentTime = createCurrentTime(startingTime)
-  let change = () => {}
+  const currentTime = createCurrentTime(startingTime)
+  const listeners = []
+  const onChange = notify(listeners)
   let interval;
   return {
     start: () => {
-      change(currentTime.toString(), MODES.running)
+      onChange(currentTime.toString(), MODES.running)
       interval = setInterval(() => {
         const newTime = currentTime.increment(-1000)
-        change(newTime, MODES.running)
+        onChange(newTime, MODES.running)
         if(newTime === 0) { 
           clearInterval(interval)
-          change(newTime, MODES.finished)
+          onChange(newTime, MODES.finished)
         }
       }, 1000)
     },
     pause: () => { 
       clearInterval(interval)
-      change(currentTime.toString(), MODES.paused)
+      onChange(currentTime.toString(), MODES.paused)
     },
-    onEvent: fn => { change = fn },
-    destroy: () => clearInterval(interval),
+    onEvent: fn => {
+      listeners.push(fn)
+    },
+    destroy: () => {
+      listeners.length = 0
+      clearInterval(interval)
+    },
     toString: () => currentTime.toString(),
     id: uuidv1()
   }
